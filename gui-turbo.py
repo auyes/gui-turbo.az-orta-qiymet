@@ -5,8 +5,17 @@ from tkinter import *
 from tkinter import messagebox
 
 
-def yoxla(say, i, a, il, ad): #ne gostermek isteyirsense onlari da bura gonder
-    messagebox.showinfo('Netice',f'{ad} ucun orta qiymet {int(i/say)}, orta buraxilis ili {int(il/say)}, umumi say {a}')
+def yoxla(say, i, a, il, ad, namess): #ne gostermek isteyirsense onlari da bura gonder
+    namess.sort()
+    iii = 0
+    x = ''
+    for name in namess:
+      iii = iii + 1
+      if iii==1:
+         x = x + str(iii) + ")" + name
+      else:
+         x = x + "\n" + str(iii) + ")" + name
+    messagebox.showinfo('Netice',f'Yoxlanilan avtomobiller ucun orta qiymet: {int(i/say)} azn, orta buraxilis ili: {int(il/say)}, umumi say: {a}. \nAvtomobillerin siyahisi:\n{x}')
  
 window = Tk()
 window.title('Orta qiymet cixarici')
@@ -57,7 +66,8 @@ def urlt(turbo, x):
     prices = soup.find_all('div', class_='product-price') #class-i product-price olan butun div-leri tapsin
     title = soup.find('div', class_='products-i__name products-i__bottom-text') #avtomobilin adi (avtomobilin adin duzgun cixarmir, BMW 5 series secende, BMW 540 kimi ad gelir)
     years = soup.find_all('div', class_='products-i__attributes products-i__bottom-text') #avtomobilin ili
-
+    car_names = soup.find_all('div', class_='products-i__name products-i__bottom-text')#avtomobillerin adin cixarir
+    
     # total_price = sum([int(price.get_text().replace(' ', '').replace('AZN', '').replace('$', '')) for price in prices]) #Elave edilmeli: dollar isaresi varsa, hemin qiymeti hesablamasin !!!
     total_price = 0
     average = 0
@@ -65,18 +75,26 @@ def urlt(turbo, x):
         if 'AZN' in price.get_text(): #qiymet azn ile olanda hesablasin
             total_price += int(price.get_text().replace(' ', '').replace('AZN', ''))
             average += 1
-
+    
+    carnames = []
+    xxx = 0
+    for car_name in car_names:
+        if car_name.get_text() not in carnames:
+            carnames.append(car_name.get_text())
+        xxx = xxx + 1
     average_price = total_price / average # orta qiymet cixarilir
 
     total_year = sum([int(year.get_text()[0:4]) for year in years])
     average_year = total_year / len(years) #orta il cixarilir
 
-    return average_price, len(prices), title, average_year
+    return average_price, len(prices), title, average_year, carnames
 
 i=0
 a=0
 say = 0
 il = 0
+names = []
+namess = []
 z=[]
 
 def hesabla(turbo, d):
@@ -90,10 +108,16 @@ def hesabla(turbo, d):
       global il
       il = il + int(urlt(turbo, x)[3])
       z.append(urlt(turbo, x))
+      global names
+      global namess
+      names = names + urlt(turbo, x)[4]
+      for name in names:
+        if name not in namess:
+            namess.append(name)
       global ad
       if x == 1:
          ad = urlt(turbo, x)[2].get_text() #avtomobilin adin ad deyisenine elave edir
-   yoxla(say, i, a, il, ad)
+   yoxla(say, i, a, il, ad, namess)
 
 def basla():
     turbo = url_tf.get() #sehifenin unvani
